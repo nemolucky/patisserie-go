@@ -9,7 +9,8 @@ services:
     ports:
       - '8080:8080'
     depends_on:
-      - patisserie-postgres
+      patisserie-migrate:
+        condition: service_completed_successfully
 
   patisserie-postgres:
     image: postgres:17-alpine
@@ -18,10 +19,13 @@ services:
     ports:
       - '5432:5432'
 
+    env_file:
+      - .env.docker
+
     environment:
-      POSTGRES_DB: patisserie_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
 
     volumes:
       - /home/nemolucky/docker/postgres:/var/lib/postgresql/data
@@ -31,3 +35,44 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  patisserie-minio:
+    image: minio/minio:latest
+    container_name: patisserie-minio
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin123
+
+    volumes:
+      - /home/nemolucky/docker/minio:/data
+
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  patisserie-migrate:
+    image: migrate/migrate
+    container_name: patisserie-migrate
+    volumes:
+      - ./migrations:/migrations
+    env_file:
+      - .env.docker
+    depends_on:
+      patisserie-postgres:
+        condition: service_healthy
+    command:
+      [
+        '-path',
+        '/migrations',
+        '-database',
+        'postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSL_MODE}',
+        'up',
+      ]

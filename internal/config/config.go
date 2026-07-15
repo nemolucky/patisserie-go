@@ -24,6 +24,7 @@ type PostgresConfig struct {
 	User     string `env:"DB_USER"`
 	Password string `env:"DB_PASSWORD"`
 	Name     string `env:"DB_NAME"`
+	SSLMode  string `env:"DB_SSL_MODE" env-default:"disable"`
 }
 
 type MinioConfig struct {
@@ -51,7 +52,7 @@ func (cfg *PostgresConfig) DSN() string {
 		Host:   fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
 		Path:   cfg.Name,
 		RawQuery: url.Values{
-			"sslmode": []string{"disable"},
+			"sslmode": {cfg.SSLMode},
 		}.Encode(),
 	}).String()
 }

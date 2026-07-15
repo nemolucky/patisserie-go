@@ -1,4 +1,4 @@
-// package handler
+package handler
 
 // type CategoryHandler struct{
 // 	usecase category_usecase.Usecase
