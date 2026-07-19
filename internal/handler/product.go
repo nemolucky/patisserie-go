@@ -1,13 +1,75 @@
 package handler
 
-// type ProductHandler struct{
-// 	usecase product_usecase.Usecase
-// }
+import (
+	"encoding/json"
+	"net/http"
+	"strconv"
 
-// func New(
-// 	usecase product_usecase.Usecase,
-// ) *ProductHandler {
-// 	return &ProductHandler{
-// 		usecase: usecase,
-// 	}
-// }
+	"github.com/go-chi/chi"
+	product_usecase "github.com/nemolucky/patisserie-go/internal/usecase/product/crud"
+)
+
+type ProductHandler struct{
+	usecase *product_usecase.UseCase
+}
+
+func NewProductHandler(
+	usecase *product_usecase.UseCase,
+) *ProductHandler {
+	return &ProductHandler{
+		usecase: usecase,
+	}
+}
+
+func (h *ProductHandler) Register(r chi.Router) {
+	r.Route("/products", func(r chi.Router) {
+		r.Get("/", h.ListCatalogProducts)
+	})
+}
+
+func (h *ProductHandler) ListCatalogProducts(w http.ResponseWriter, r *http.Request) {
+
+	query := r.URL.Query()
+
+	limitStr := query.Get("limit")
+	offsetStr := query.Get("offset")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 20
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		offset = 0
+	}
+
+	input := product_usecase.ListCatalogProductsInput{
+		Limit:  limit,
+		Offset: offset,
+	}
+
+	output, err := h.usecase.ListCatalogProducts(
+		r.Context(),
+		input,
+	)
+	if err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(output); err != nil {
+		http.Error(
+			w,
+			"failed to encode response",
+			http.StatusInternalServerError,
+		)
+	}
+}

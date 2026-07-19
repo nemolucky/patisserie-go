@@ -12,6 +12,7 @@ import (
 	"github.com/nemolucky/patisserie-go/internal/config"
 	"github.com/nemolucky/patisserie-go/internal/handler"
 	image_usecase "github.com/nemolucky/patisserie-go/internal/usecase/image"
+	product_usecase "github.com/nemolucky/patisserie-go/internal/usecase/product/crud"
 	"github.com/nemolucky/patisserie-go/pkg/logger"
 )
 
@@ -56,9 +57,10 @@ func main(){
 		slog.String("bucket", cfg.Minio.BucketName),
 	)
 
+	productUC := product_usecase.New(postgres)
 	imageUC := image_usecase.New(s3)
 
-	handler := handler.New(imageUC)
+	handler := handler.New(productUC, imageUC)
 	router := handler.InitRoutes()
 
 	server := &http.Server{
@@ -67,8 +69,8 @@ func main(){
 	}
 
 	log.Info(
-		"HTTP server started",
-		slog.String("addr", server.Addr),
+		"HTTP server started on address",
+		slog.String("addr", server.Addr + "/api/v1"),
 	)
 
 	if err := server.ListenAndServe(); err != nil &&

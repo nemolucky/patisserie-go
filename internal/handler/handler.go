@@ -6,22 +6,23 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	image_usecase "github.com/nemolucky/patisserie-go/internal/usecase/image"
+	product_usecase "github.com/nemolucky/patisserie-go/internal/usecase/product/crud"
 )
 
 
 type Handler struct{
-	// productHandler *ProductHandler
+	product *ProductHandler
 	// categoryHandler *CategoryHandler
 	image *ImageHandler
 }
 
 func New(
-	// product *ProductHandler,
+	productUC *product_usecase.UseCase,
 	// category *CategoryHandler,
 	imageUC *image_usecase.UseCase,
 ) *Handler {
 	return &Handler{
-		// productHandler:  product,
+		product:  NewProductHandler(productUC),
 		// categoryHandler: category,
 		image:    NewImageHandler(imageUC),
 	}
@@ -33,7 +34,10 @@ func (h *Handler) InitRoutes() http.Handler{
 
 	r.Use(middleware.Logger, middleware.Recoverer)
 
-	h.image.Register(r)
+	r.Route("/api/v1", func (r chi.Router){
+		h.image.Register(r)
+		h.product.Register(r)
+	})
 
 	return r
 }

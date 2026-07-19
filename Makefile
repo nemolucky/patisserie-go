@@ -23,3 +23,11 @@ migration-create:
 		-ext sql \
 		-dir $(MIGRATION_PATH) \
 		-seq $(name)
+
+reset:
+	docker compose down
+	sudo rm -rf /home/nemolucky/docker/postgres
+	sudo rm -rf /home/nemolucky/docker/minio
+	sudo mkdir -p /home/nemolucky/docker/postgres
+	sudo mkdir -p /home/nemolucky/docker/minio
+	docker compose up --build
