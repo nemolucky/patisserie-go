@@ -33,6 +33,7 @@ type MinioConfig struct {
 	SecretAccessKey string `env:"SECRET_ACCESS_KEY"`
 	UseSSL          bool   `env:"USE_SSL" env-default:"false"`
 	BucketName      string `env:"BUCKET_NAME"`
+	BucketPolicy    string `env:"BUCKET_POLICY" env-default:"private"`
 }
 
 func New() (*Config, error) {

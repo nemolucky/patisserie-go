@@ -22,6 +22,17 @@ func New(
 	}
 }
 
-func (u *UseCase) Upload(ctx context.Context, image *domain.UploadImage) (*domain.UploadedImage, error) {
-	return u.Storage.Upload(ctx, image)
+func (u *UseCase) Upload(ctx context.Context, images []*domain.UploadImage) ([]*domain.UploadedImage, error) {
+
+	uploadedImages := make([]*domain.UploadedImage, 0, len(images))
+
+	for _, image := range images {
+		uploadedImage, err := u.Storage.Upload(ctx, image)
+		if err != nil {
+			return nil, err
+		}
+		uploadedImages = append(uploadedImages, uploadedImage)
+	}
+	
+	return uploadedImages, nil
 }

@@ -52,10 +52,25 @@ func New(
 			)
 		}
 
+		switch cfg.BucketPolicy {
+			case "public":
+				if err := setPublicPolicy(ctx, client, cfg.BucketName); err != nil {
+					return nil, fmt.Errorf(
+						"set bucket %q policy: %w",
+						cfg.BucketName,
+						err,
+					)
+				}
+			default:
+				return nil, fmt.Errorf("unknown bucket policy: %s", cfg.BucketPolicy)
+		}
+
 		log.Info(
 			"minio bucket created",
 			"bucket",
 			cfg.BucketName,
+			"policy",
+			cfg.BucketPolicy,
 		)
 	}
 
@@ -64,4 +79,29 @@ func New(
 		Bucket: cfg.BucketName,
 		Logger: log,
 	}, nil
+}
+
+func setPublicPolicy(ctx context.Context, client *minio.Client, bucket string) error {
+	policy := fmt.Sprintf(`{
+		"Version":"2012-10-17",
+		"Statement":[
+			{
+				"Effect":"Allow",
+				"Principal":{"AWS":["*"]},
+				"Action":["s3:GetObject"],
+				"Resource":["arn:aws:s3:::%s/*"]
+			}
+		]
+	}`, bucket)
+
+	return client.SetBucketPolicy(ctx, bucket, policy)
+}
+
+func (m *MinIO) ObjectURL(key string) string {
+	return fmt.Sprintf(
+		"http://%s/%s/%s",
+		m.Client.EndpointURL().Host,
+		m.Bucket,
+		key,
+	)
 }
