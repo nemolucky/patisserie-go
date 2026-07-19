@@ -6,18 +6,20 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
 	"github.com/nemolucky/patisserie-go/internal/domain"
+	image_usecase "github.com/nemolucky/patisserie-go/internal/usecase/image"
 )
 
 func (m *MinIO) Upload(
 	ctx context.Context,
-	image *domain.UploadImage,
+	image image_usecase.UploadImage,
 ) (*domain.UploadedImage, error) {
 
 	key := fmt.Sprintf(
 		"images/%s%s",
-		image.ID,
+		uuid.NewString(),
 		filepath.Ext(image.Filename),
 	)
 
@@ -38,7 +40,10 @@ func (m *MinIO) Upload(
 	}
 
 	return &domain.UploadedImage{
-		ID:  image.ID,
 		Key: key,
 	}, nil
+}
+
+func (m *MinIO) Delete(ctx context.Context, key string) error {
+	return m.Client.RemoveObject(ctx, m.Bucket, key, minio.RemoveObjectOptions{})
 }

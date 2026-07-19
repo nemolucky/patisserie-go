@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/nemolucky/patisserie-go/internal/config"
@@ -53,4 +54,12 @@ func (p *Postgres) Close() {
 	}
 
 	p.Logger.Info("postgres connection closed")
+}
+
+func (p *Postgres) BeginTx(ctx context.Context) (pgx.Tx, error) {
+	return p.Pool.Begin(ctx)
+}
+
+func (p *Postgres) CommitTx(ctx context.Context, tx pgx.Tx) error {
+	return tx.Commit(ctx)
 }

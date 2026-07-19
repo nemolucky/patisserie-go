@@ -11,8 +11,8 @@ type NutritionFacts struct {
 }
 
 type ProductImage struct {
-	ID        *uuid.UUID `json:"id"`
-	URL       string    `json:"url"`
+	ID        uuid.UUID `json:"id"`
+	Key       string    `json:"key"`
 	SortOrder int       `json:"sort_order"`
 }
 
@@ -25,7 +25,7 @@ type Product struct {
 
 	Facts      *NutritionFacts `json:"facts,omitempty"`
 	Images     []ProductImage  `json:"images"`
-	Categories []string    `json:"categories"`
+	Categories []Category    `json:"categories"`
 }
 
 type CatalogProduct struct {

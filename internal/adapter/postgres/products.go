@@ -5,7 +5,9 @@ import (
 
 	_ "embed"
 
+	"github.com/google/uuid"
 	"github.com/nemolucky/patisserie-go/internal/domain"
+	product_usecase "github.com/nemolucky/patisserie-go/internal/usecase/product/crud"
 )
 
 //go:embed queries/products/list_catalog.sql
@@ -26,7 +28,7 @@ func (p *Postgres) ListCatalogProducts(ctx context.Context, limit int, offset in
 
 		var product domain.CatalogProduct
 
-		if err := rows.Scan(&product.ID, &product.Title, &product.Price, &product.Image.URL, &product.Image.SortOrder, &product.Categories); err != nil {
+		if err := rows.Scan(&product.ID, &product.Title, &product.Price, &product.Image.Key, &product.Image.SortOrder, &product.Categories); err != nil {
 			return nil, err
 		}
 
@@ -38,4 +40,15 @@ func (p *Postgres) ListCatalogProducts(ctx context.Context, limit int, offset in
 
 
 	return products, nil
+}
+
+func (p *Postgres) CreateProduct(ctx context.Context, title, description string, price int64) (*uuid.UUID, error) {
+
+	
+
+	return nil, nil
+}
+
+func (p *Postgres) CreateProductImages(ctx context.Context, productID uuid.UUID, images []product_usecase.ProductImageInput) error {
+	return nil
 }

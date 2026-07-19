@@ -3,11 +3,17 @@ package product_usecase
 import (
 	"context"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/nemolucky/patisserie-go/internal/domain"
 )
 
 type Repository interface{
+	BeginTx(ctx context.Context) (pgx.Tx, error)
+	CommitTx(ctx context.Context, tx pgx.Tx) error
 	ListCatalogProducts(ctx context.Context, limit int, offset int) ([]*domain.CatalogProduct, error)
+	CreateProduct(ctx context.Context, title, description string, price int64) (*uuid.UUID, error)
+	CreateProductImages(ctx context.Context, productID uuid.UUID, images []ProductImageInput) error
 }
 
 type UseCase struct {
@@ -49,4 +55,28 @@ func (u *UseCase) ListCatalogProducts(ctx context.Context, input ListCatalogProd
 		Limit:    limit,
 		Offset:   offset,
 	}, nil
+}
+
+func (u *UseCase) Create(ctx context.Context, input CreateProductInput) (*uuid.UUID, error) {
+
+	tx, err := u.repository.BeginTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	productID, err := u.repository.CreateProduct(ctx, input.Title, input.Description, input.Price)
+	if err != nil {
+		return nil, err
+	}
+
+	err = u.repository.CreateProductImages(ctx, *productID, input.Images)
+	if err != nil {
+		return nil, err
+	}
+
+
+
+
+	err = u.repository.CommitTx(ctx, tx)
+	return nil, nil
 }

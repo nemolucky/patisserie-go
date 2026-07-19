@@ -11,6 +11,7 @@ import (
 	"github.com/nemolucky/patisserie-go/internal/adapter/postgres"
 	"github.com/nemolucky/patisserie-go/internal/config"
 	"github.com/nemolucky/patisserie-go/internal/handler"
+	category_usecase "github.com/nemolucky/patisserie-go/internal/usecase/category"
 	image_usecase "github.com/nemolucky/patisserie-go/internal/usecase/image"
 	product_usecase "github.com/nemolucky/patisserie-go/internal/usecase/product/crud"
 	"github.com/nemolucky/patisserie-go/pkg/logger"
@@ -58,9 +59,10 @@ func main(){
 	)
 
 	productUC := product_usecase.New(postgres)
-	imageUC := image_usecase.New(s3)
+	categoryUC := category_usecase.New(postgres)
+	imageUC := image_usecase.New(s3, postgres)
 
-	handler := handler.New(productUC, imageUC)
+	handler := handler.New(productUC, categoryUC, imageUC)
 	router := handler.InitRoutes()
 
 	server := &http.Server{

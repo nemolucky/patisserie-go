@@ -7,30 +7,45 @@ import (
 )
 
 type Storage interface {
-	Upload(ctx context.Context, image *domain.UploadImage) (*domain.UploadedImage, error)
+	Upload(ctx context.Context, image UploadImage) (*domain.UploadedImage, error)
+	Delete(ctx context.Context, key string) error
+}
+
+type Repository interface {
+	CreateImage(ctx context.Context, key string) error
 }
 
 type UseCase struct {
-	Storage Storage
+	storage Storage
+	repository Repository
 }
 
 func New(
 	storage Storage,
+	repository Repository,
 ) *UseCase {
 	return &UseCase{
-		Storage: storage,
+		storage: storage,
+		repository: repository,
 	}
 }
 
-func (u *UseCase) Upload(ctx context.Context, images []*domain.UploadImage) ([]*domain.UploadedImage, error) {
+func (u *UseCase) Upload(ctx context.Context, images []UploadImage) ([]*domain.UploadedImage, error) {
 
 	uploadedImages := make([]*domain.UploadedImage, 0, len(images))
 
 	for _, image := range images {
-		uploadedImage, err := u.Storage.Upload(ctx, image)
+		uploadedImage, err := u.storage.Upload(ctx, image)
 		if err != nil {
 			return nil, err
 		}
+		
+		err = u.repository.CreateImage(ctx, uploadedImage.Key)
+		if err != nil {
+			_ = u.storage.Delete(ctx, uploadedImage.Key)
+			return nil, err
+		}
+
 		uploadedImages = append(uploadedImages, uploadedImage)
 	}
 	

@@ -16,9 +16,17 @@ CREATE TABLE categories
 (
     id         UUID PRIMARY KEY      DEFAULT uuid_generate_v4(),
     title      VARCHAR(255) NOT NULL UNIQUE,
+    parent_id UUID REFERENCES categories (id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ    NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE images
+(
+    id         UUID PRIMARY KEY   DEFAULT uuid_generate_v4(),
+    key        TEXT      NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)
 
 CREATE TABLE product_categories
 (
@@ -30,10 +38,8 @@ CREATE TABLE product_categories
 
 CREATE TABLE product_images
 (
-    id         UUID PRIMARY KEY   DEFAULT uuid_generate_v4(),
     product_id UUID      NOT NULL REFERENCES products (id) ON DELETE CASCADE,
-    key        TEXT      NOT NULL,
-    url        TEXT      NOT NULL,
+    image_id UUID      NOT NULL REFERENCES images (id) ON DELETE CASCADE,
     sort_order INTEGER   NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

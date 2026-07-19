@@ -6,8 +6,6 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/google/uuid"
-	"github.com/nemolucky/patisserie-go/internal/domain"
 	image_usecase "github.com/nemolucky/patisserie-go/internal/usecase/image"
 )
 
@@ -53,7 +51,7 @@ func (h *ImageHandler) Upload(w http.ResponseWriter, r *http.Request) {
     return
 	}
 
-	images := make([]*domain.UploadImage, 0, len(headers))
+	images := make([]image_usecase.UploadImage, 0, len(headers))
 
 	for _, header := range headers {
 		
@@ -77,8 +75,7 @@ func (h *ImageHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 
 		data, err := io.ReadAll(file)
-		images = append(images, &domain.UploadImage{
-				ID:          uuid.New(),
+		images = append(images, image_usecase.UploadImage{
 				Filename:    header.Filename,
 				ContentType: header.Header.Get("Content-Type"),
 				Data:        data,

@@ -1,0 +1,1 @@
+INSERT INTO images (key) VALUES ($1);
