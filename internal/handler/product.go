@@ -24,6 +24,7 @@ func NewProductHandler(
 func (h *ProductHandler) Register(r chi.Router) {
 	r.Route("/products", func(r chi.Router) {
 		r.Get("/", h.ListCatalogProducts)
+		r.Post("/", h.CreateProduct) 
 	})
 }
 
@@ -72,4 +73,32 @@ func (h *ProductHandler) ListCatalogProducts(w http.ResponseWriter, r *http.Requ
 			http.StatusInternalServerError,
 		)
 	}
+}
+
+func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
+
+	body := r.Body
+	defer r.Body.Close()
+
+	var input product_usecase.CreateProductInput
+	if err := json.NewDecoder(body).Decode(&input); err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusBadRequest,
+		)
+	}
+
+	productID, err := h.usecase.Create(r.Context(), input)
+	if err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(productID.String()))
 }

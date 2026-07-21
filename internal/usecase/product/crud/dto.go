@@ -17,7 +17,7 @@ type ListCatalogProductsOutput struct{
 }
 
 type ProductImageInput struct {
-	Key       string    `json:"key"`
+	ID       uuid.UUID  `json:"id"`
 	SortOrder int       `json:"sort_order"`
 }
 

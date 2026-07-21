@@ -1,1 +1,1 @@
-SELECT id, title FROM categories;
+SELECT id, title, parent FROM categories;

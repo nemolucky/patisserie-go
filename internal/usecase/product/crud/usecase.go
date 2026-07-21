@@ -14,6 +14,8 @@ type Repository interface{
 	ListCatalogProducts(ctx context.Context, limit int, offset int) ([]*domain.CatalogProduct, error)
 	CreateProduct(ctx context.Context, title, description string, price int64) (*uuid.UUID, error)
 	CreateProductImages(ctx context.Context, productID uuid.UUID, images []ProductImageInput) error
+	CreateProductCategories(ctx context.Context, productID uuid.UUID, categories []uuid.UUID) error
+	CreateNutrition(ctx context.Context, productID uuid.UUID, nutrition domain.NutritionFacts) error
 }
 
 type UseCase struct {
@@ -74,9 +76,16 @@ func (u *UseCase) Create(ctx context.Context, input CreateProductInput) (*uuid.U
 		return nil, err
 	}
 
-
-
+	err = u.repository.CreateProductCategories(ctx, *productID, input.Categories)
+	if err != nil {
+		return nil, err
+	}
 
 	err = u.repository.CommitTx(ctx, tx)
-	return nil, nil
+
+	if err != nil {
+		return nil, err
+	}
+
+	return productID, nil
 }

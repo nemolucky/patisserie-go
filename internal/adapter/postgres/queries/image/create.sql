@@ -1,1 +1,3 @@
-INSERT INTO images (key) VALUES ($1);
+INSERT INTO images (key) 
+VALUES ($1)
+RETURNING id;

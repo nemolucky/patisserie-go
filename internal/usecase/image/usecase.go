@@ -3,6 +3,7 @@ package image_usecase
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/nemolucky/patisserie-go/internal/domain"
 )
 
@@ -12,7 +13,7 @@ type Storage interface {
 }
 
 type Repository interface {
-	CreateImage(ctx context.Context, key string) error
+	CreateImage(ctx context.Context, key string) (*uuid.UUID, error)
 }
 
 type UseCase struct {
@@ -30,9 +31,9 @@ func New(
 	}
 }
 
-func (u *UseCase) Upload(ctx context.Context, images []UploadImage) ([]*domain.UploadedImage, error) {
+func (u *UseCase) Upload(ctx context.Context, images []UploadImage) ([]*uuid.UUID, error) {
 
-	uploadedImages := make([]*domain.UploadedImage, 0, len(images))
+	uploadedImages := make([]*uuid.UUID, 0, len(images))
 
 	for _, image := range images {
 		uploadedImage, err := u.storage.Upload(ctx, image)
@@ -40,13 +41,13 @@ func (u *UseCase) Upload(ctx context.Context, images []UploadImage) ([]*domain.U
 			return nil, err
 		}
 		
-		err = u.repository.CreateImage(ctx, uploadedImage.Key)
+		imageID, err := u.repository.CreateImage(ctx, uploadedImage.Key)
 		if err != nil {
 			_ = u.storage.Delete(ctx, uploadedImage.Key)
 			return nil, err
 		}
 
-		uploadedImages = append(uploadedImages, uploadedImage)
+		uploadedImages = append(uploadedImages, imageID)
 	}
 	
 	return uploadedImages, nil
