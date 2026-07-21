@@ -16,6 +16,7 @@ type Repository interface{
 	CreateProductImages(ctx context.Context, productID uuid.UUID, images []ProductImageInput) error
 	CreateProductCategories(ctx context.Context, productID uuid.UUID, categories []uuid.UUID) error
 	CreateNutrition(ctx context.Context, productID uuid.UUID, nutrition domain.NutritionFacts) error
+	GetProduct(ctx context.Context, id uuid.UUID) (*domain.Product, error)
 }
 
 type UseCase struct {
@@ -88,4 +89,8 @@ func (u *UseCase) Create(ctx context.Context, input CreateProductInput) (*uuid.U
 	}
 
 	return productID, nil
+}
+
+func (u *UseCase) GetProduct(ctx context.Context, id uuid.UUID) (*domain.Product, error) {
+	return u.repository.GetProduct(ctx, id)
 }

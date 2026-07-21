@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/google/uuid"
 	product_usecase "github.com/nemolucky/patisserie-go/internal/usecase/product/crud"
 )
 
@@ -24,7 +25,8 @@ func NewProductHandler(
 func (h *ProductHandler) Register(r chi.Router) {
 	r.Route("/products", func(r chi.Router) {
 		r.Get("/", h.ListCatalogProducts)
-		r.Post("/", h.CreateProduct) 
+		r.Post("/", h.CreateProduct)
+		r.Get("/{id}", h.GetProduct)
 	})
 }
 
@@ -101,4 +103,39 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(productID.String()))
+}
+
+func (h *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
+
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+
+	if err != nil {
+		http.Error(
+			w,
+			"invalid id",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	output, err := h.usecase.GetProduct(r.Context(), id)
+	if err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(output); err != nil {
+		http.Error(
+			w,
+			"failed to encode response",
+			http.StatusInternalServerError,
+		)
+	}
 }

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 
 	_ "embed"
 
@@ -24,6 +25,9 @@ var ConnectProductCategoriesQuery string
 
 //go:embed queries/products/create_nutrition.sql
 var ConnectProductNutritionQuery string
+
+//go:embed queries/products/get_by_id.sql
+var GetProductByIDQuery string
 
 
 func (p *Postgres) ListCatalogProducts(ctx context.Context, limit int, offset int) ([]*domain.CatalogProduct, error) {
@@ -95,4 +99,44 @@ func (p *Postgres) CreateNutrition(ctx context.Context, productID uuid.UUID, nut
 	_, err := p.Pool.Exec(ctx, ConnectProductNutritionQuery, productID, nutrition.Calories, nutrition.Protein, nutrition.Fat, nutrition.Carbohydrates, nutrition.Weight)
 	
 	return err
+}
+
+func (p *Postgres) GetProduct(ctx context.Context, id uuid.UUID) (*domain.Product, error) {
+
+	var product domain.Product
+
+	var (
+		categories json.RawMessage
+		images json.RawMessage
+		facts json.RawMessage
+	)
+
+	err := p.Pool.QueryRow(ctx, GetProductByIDQuery, id).
+								Scan(&product.ID, 
+										&product.Title, 
+										&product.Description, 
+										&product.Price, 
+										&product.IsActive, 
+										&categories, 
+										&images, 
+										&facts)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := json.Unmarshal(categories, &product.Categories); err != nil {
+			return nil, err
+	}
+
+	if err := json.Unmarshal(images, &product.Images); err != nil {
+			return nil, err
+	}
+
+	if len(facts) > 0 && string(facts) != "null" {
+			if err := json.Unmarshal(facts, &product.Facts); err != nil {
+					return nil, err
+			}
+	}
+
+	return &product, nil
 }
