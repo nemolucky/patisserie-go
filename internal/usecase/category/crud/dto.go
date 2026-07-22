@@ -8,5 +8,5 @@ type CreateInput struct{
 }
 
 type DeleteInput struct{
-	ID uuid.UUID
+	ID uuid.UUID `json:"id"`
 }

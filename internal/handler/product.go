@@ -27,6 +27,7 @@ func (h *ProductHandler) Register(r chi.Router) {
 		r.Get("/", h.ListCatalogProducts)
 		r.Post("/", h.CreateProduct)
 		r.Get("/{id}", h.GetProduct)
+		r.Patch("/active/{id}", h.UpdateActive)
 	})
 }
 
@@ -139,3 +140,37 @@ func (h *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 }
+
+func (h *ProductHandler) UpdateActive(w http.ResponseWriter, r *http.Request){
+
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(
+			w,
+			"invalid id",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	output, err := h.usecase.ToggleActiveProduct(r.Context(), id)
+	if err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(output); err != nil {
+		http.Error(
+			w,
+			"failed to encode response",
+			http.StatusInternalServerError,
+		)
+	}
+} 

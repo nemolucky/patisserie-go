@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
-	category_usecase "github.com/nemolucky/patisserie-go/internal/usecase/category"
+	category_usecase "github.com/nemolucky/patisserie-go/internal/usecase/category/crud"
 )
 
 type CategoryHandler struct{
@@ -24,6 +24,7 @@ func NewCategoryHandler(
 func (h *CategoryHandler) Register(r chi.Router) {
 	r.Route("/categories", func(r chi.Router) {
 		r.Get("/", h.List)
+		r.Get("/tree", h.Tree)
 		r.Post("/", h.Create)
 		r.Delete("/{id}", h.Delete)
 	})
@@ -32,6 +33,28 @@ func (h *CategoryHandler) Register(r chi.Router) {
 func (h *CategoryHandler) List(w http.ResponseWriter, r *http.Request) {
 	
 	categories, err := h.usecase.List(r.Context())
+	if err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(categories); err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+	}
+}
+
+func (h *CategoryHandler) Tree(w http.ResponseWriter, r *http.Request) {
+	
+	categories, err := h.usecase.Tree(r.Context())
 	if err != nil {
 		http.Error(
 			w,

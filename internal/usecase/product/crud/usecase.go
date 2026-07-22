@@ -17,6 +17,7 @@ type Repository interface{
 	CreateProductCategories(ctx context.Context, productID uuid.UUID, categories []uuid.UUID) error
 	CreateNutrition(ctx context.Context, productID uuid.UUID, nutrition domain.NutritionFacts) error
 	GetProduct(ctx context.Context, id uuid.UUID) (*domain.Product, error)
+	ToggleActiveProduct(ctx context.Context, id uuid.UUID) (bool, error)
 }
 
 type UseCase struct {
@@ -93,4 +94,8 @@ func (u *UseCase) Create(ctx context.Context, input CreateProductInput) (*uuid.U
 
 func (u *UseCase) GetProduct(ctx context.Context, id uuid.UUID) (*domain.Product, error) {
 	return u.repository.GetProduct(ctx, id)
+}
+
+func (u *UseCase) ToggleActiveProduct(ctx context.Context, id uuid.UUID) (bool, error) {
+	return u.repository.ToggleActiveProduct(ctx, id)
 }

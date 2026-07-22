@@ -36,3 +36,13 @@ func (u *UseCase) Create(ctx context.Context, input CreateInput) (uuid.UUID, err
 func (u *UseCase) Delete(ctx context.Context, input DeleteInput) error {
 	return u.repository.DeleteCategory(ctx, input.ID)
 }
+
+func (u *UseCase) Tree(ctx context.Context) ([]*CategoryNode, error) {
+	
+	categories, err := u.repository.ListCategory(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return BuildTree(categories), nil
+}

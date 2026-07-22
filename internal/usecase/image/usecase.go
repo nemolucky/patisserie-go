@@ -14,6 +14,8 @@ type Storage interface {
 
 type Repository interface {
 	CreateImage(ctx context.Context, key string) (*uuid.UUID, error)
+	DeleteImages(ctx context.Context, imageIDs []uuid.UUID) error
+	FindUnusedImages(ctx context.Context) ([]*domain.UnusedImage, error)
 }
 
 type UseCase struct {
@@ -51,4 +53,32 @@ func (u *UseCase) Upload(ctx context.Context, images []UploadImage) ([]*uuid.UUI
 	}
 	
 	return uploadedImages, nil
+}
+
+func (u *UseCase) DeleteUnusedImages(ctx context.Context) ([]*domain.UnusedImage, error) {
+
+	unusedImages, err := u.repository.FindUnusedImages(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	ids := make([]uuid.UUID, 0, len(unusedImages))
+
+	for _, image := range unusedImages {
+
+		err = u.storage.Delete(ctx, image.Key)
+		if err != nil {
+			return nil, err
+		}
+
+		ids = append(ids, image.ID)
+	}
+
+	if len(ids) > 0 {
+		if err := u.repository.DeleteImages(ctx, ids); err != nil {
+				return nil, err
+		}
+	}
+
+	return unusedImages, nil
 }

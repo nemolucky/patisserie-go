@@ -29,6 +29,9 @@ var ConnectProductNutritionQuery string
 //go:embed queries/products/get_by_id.sql
 var GetProductByIDQuery string
 
+//go:embed queries/products/toggle_active.sql
+var ToggleActiveByIDQuery string
+
 
 func (p *Postgres) ListCatalogProducts(ctx context.Context, limit int, offset int) ([]*domain.CatalogProduct, error) {
 
@@ -139,4 +142,12 @@ func (p *Postgres) GetProduct(ctx context.Context, id uuid.UUID) (*domain.Produc
 	}
 
 	return &product, nil
+}
+
+func (p *Postgres) ToggleActiveProduct(ctx context.Context, id uuid.UUID) (bool, error) {
+
+	var isActive bool
+	err := p.Pool.QueryRow(ctx, ToggleActiveByIDQuery, id).Scan(&isActive)
+	
+	return isActive, err
 }
