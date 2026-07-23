@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
-	category_usecase "github.com/nemolucky/patisserie-go/internal/usecase/category/crud"
+	category_usecase "github.com/nemolucky/patisserie-go/internal/usecase/category"
 )
 
 type CategoryHandler struct{
@@ -24,9 +24,10 @@ func NewCategoryHandler(
 func (h *CategoryHandler) Register(r chi.Router) {
 	r.Route("/categories", func(r chi.Router) {
 		r.Get("/", h.List)
+		r.Patch("/{id}", h.Update)
+		r.Delete("/{id}", h.Delete)
 		r.Get("/tree", h.Tree)
 		r.Post("/", h.Create)
-		r.Delete("/{id}", h.Delete)
 	})
 }
 
@@ -100,6 +101,51 @@ func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(categoryID.String()))
+}
+
+func (h *CategoryHandler) Update(w http.ResponseWriter, r *http.Request) {
+	
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(
+			w,
+			"invalid id",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	body := r.Body
+	defer r.Body.Close()
+
+	var input category_usecase.UpdateInput
+	if err := json.NewDecoder(body).Decode(&input); err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusBadRequest,
+		)
+	}
+
+	output, err := h.usecase.Update(r.Context(), id, input)
+
+	if err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(output); err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+	}
 }
 
 func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {

@@ -83,6 +83,11 @@ func (u *UseCase) Create(ctx context.Context, input CreateProductInput) (*uuid.U
 		return nil, err
 	}
 
+	err = u.repository.CreateNutrition(ctx, *productID, *input.Facts)
+	if err != nil {
+		return nil, err
+	}
+
 	err = u.repository.CommitTx(ctx, tx)
 
 	if err != nil {

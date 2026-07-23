@@ -10,6 +10,8 @@ import (
 
 //go:embed queries/category/create.sql
 var CreateCategoryQuery string
+//go:embed queries/category/update.sql
+var UpdateCategoryQuery string
 //go:embed queries/category/delete.sql
 var DeleteCategoryQuery string
 //go:embed queries/category/list.sql
@@ -21,6 +23,15 @@ func (p *Postgres) CreateCategory(ctx context.Context, title string, parent uuid
 	err := p.Pool.QueryRow(ctx, CreateCategoryQuery, title, parent).Scan(&categoryID)
 
 	return categoryID, err
+}
+
+func (p *Postgres) UpdateCategory(ctx context.Context, categoryID uuid.UUID, title string) (*domain.Category, error) {
+
+	var category domain.Category
+
+	err := p.Pool.QueryRow(ctx, UpdateCategoryQuery, categoryID, title).Scan(&category.ID, &category.Title, &category.Parent)
+
+	return &category, err
 }
 
 func (p *Postgres) DeleteCategory(ctx context.Context, categoryID uuid.UUID) (error) {

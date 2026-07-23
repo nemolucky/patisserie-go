@@ -7,6 +7,10 @@ type CreateInput struct{
 	Parent uuid.UUID `json:"parent"`
 }
 
+type UpdateInput struct{
+	Title string `json:"title"`
+}
+
 type DeleteInput struct{
 	ID uuid.UUID `json:"id"`
 }

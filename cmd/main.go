@@ -16,7 +16,7 @@ import (
 	"github.com/nemolucky/patisserie-go/internal/config"
 	"github.com/nemolucky/patisserie-go/internal/handler"
 
-	category_usecase "github.com/nemolucky/patisserie-go/internal/usecase/category/crud"
+	category_usecase "github.com/nemolucky/patisserie-go/internal/usecase/category"
 	image_usecase "github.com/nemolucky/patisserie-go/internal/usecase/image"
 	product_usecase "github.com/nemolucky/patisserie-go/internal/usecase/product/crud"
 

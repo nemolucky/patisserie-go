@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	category_usecase "github.com/nemolucky/patisserie-go/internal/usecase/category/crud"
+	category_usecase "github.com/nemolucky/patisserie-go/internal/usecase/category"
 	image_usecase "github.com/nemolucky/patisserie-go/internal/usecase/image"
 	product_usecase "github.com/nemolucky/patisserie-go/internal/usecase/product/crud"
 )
