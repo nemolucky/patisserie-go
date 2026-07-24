@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nemolucky/patisserie-go/internal/domain"
-	product_usecase "github.com/nemolucky/patisserie-go/internal/usecase/product/crud"
 )
 
 //go:embed queries/products/list_catalog.sql
@@ -20,11 +19,23 @@ var CreateProductsQuery string
 //go:embed queries/products/connect_images.sql
 var ConnectProductImagesQuery string
 
+//go:embed queries/products/delete_attached_images.sql
+var DeleteAttachedImagesQuery string
+
 //go:embed queries/products/connect_categories.sql
 var ConnectProductCategoriesQuery string
 
+//go:embed queries/products/delete_attached_categories.sql
+var DeleteAttachedCategoriesQuery string
+
 //go:embed queries/products/create_nutrition.sql
 var ConnectProductNutritionQuery string
+
+//go:embed queries/products/update.sql
+var UpdateProductQuery string
+
+//go:embed queries/products/update_nutrition.sql
+var UpdateNutritionQuery string
 
 //go:embed queries/products/get_by_id.sql
 var GetProductByIDQuery string
@@ -73,28 +84,39 @@ func (p *Postgres) CreateProduct(ctx context.Context, title, description string,
 	return &productID, nil
 }
 
-func (p *Postgres) CreateProductImages(ctx context.Context, productID uuid.UUID, images []product_usecase.ProductImageInput) error {
+func (p *Postgres) ConnectProductImages(ctx context.Context, productID uuid.UUID, images []uuid.UUID) error {
 
-	for _, image := range images {
-		_, err := p.Pool.Exec(ctx, ConnectProductImagesQuery, productID, image.ID, image.SortOrder)
-		if err != nil {
-			return err
-		}
+	orders := make([]int, len(images))
+
+	for i := range images {
+		orders[i] = i
 	}
 
-	return nil
+	_, err := p.Pool.Exec(ctx, ConnectProductImagesQuery, productID, images, orders)
+
+	return err
 }
 
-func (p *Postgres) CreateProductCategories(ctx context.Context, productID uuid.UUID, categories []uuid.UUID) error {
+func (p *Postgres) DeleteAttachedImages(ctx context.Context, id uuid.UUID) error {
 
-	for _, category := range categories {
-		_, err := p.Pool.Exec(ctx, ConnectProductCategoriesQuery, productID, category)
-		if err != nil {
-			return err
-		}
-	}
+	_, err := p.Pool.Exec(ctx, DeleteAttachedImagesQuery, id)
+	
+	return err
+}
 
-	return nil
+func (p *Postgres) ConnectProductCategories(ctx context.Context, productID uuid.UUID, categories []uuid.UUID) error {
+
+	_, err := p.Pool.Exec(ctx, ConnectProductCategoriesQuery, productID, categories)
+
+	return err
+}
+
+
+func (p *Postgres) DeleteAttachedCategories(ctx context.Context, id uuid.UUID) error {
+
+	_, err := p.Pool.Exec(ctx, DeleteAttachedCategoriesQuery, id)
+	
+	return err
 }
 
 func (p *Postgres) CreateNutrition(ctx context.Context, productID uuid.UUID, nutrition domain.NutritionFacts) error {
@@ -150,4 +172,18 @@ func (p *Postgres) ToggleActiveProduct(ctx context.Context, id uuid.UUID) (bool,
 	err := p.Pool.QueryRow(ctx, ToggleActiveByIDQuery, id).Scan(&isActive)
 	
 	return isActive, err
+}
+
+func (p *Postgres) UpdateProduct(ctx context.Context, id uuid.UUID, title, description string, price int64) error {
+
+	_ , err := p.Pool.Exec(ctx, UpdateProductQuery, id, title, description, price)
+
+	return err
+}
+
+func (p *Postgres) UpdateNutrition(ctx context.Context, id uuid.UUID, facts domain.NutritionFacts) error {
+
+	_ , err := p.Pool.Exec(ctx, UpdateNutritionQuery, id, facts.Calories, facts.Protein, facts.Fat, facts.Carbohydrates, facts.Weight)
+
+	return err
 }

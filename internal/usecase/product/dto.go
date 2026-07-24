@@ -16,17 +16,19 @@ type ListCatalogProductsOutput struct{
 	Offset int `json:"offset"`
 }
 
-type ProductImageInput struct {
-	ID       uuid.UUID  `json:"id"`
-	SortOrder int       `json:"sort_order"`
-}
-
 type CreateProductInput struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Price       int64 `json:"price"`
 
-	Images     []ProductImageInput `json:"images"`
+	Images     []uuid.UUID `json:"images"`
 	Categories []uuid.UUID `json:"categories"`
 	Facts      *domain.NutritionFacts `json:"facts,omitempty"`
+}
+
+
+type UpdateProductInput struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Price       int64 `json:"price"`
 }

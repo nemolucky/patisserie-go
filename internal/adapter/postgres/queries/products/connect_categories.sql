@@ -1,2 +1,2 @@
 INSERT INTO product_categories (product_id, category_id)
-VALUES ($1, $2);
+SELECT $1, unnest($2::uuid[]);
