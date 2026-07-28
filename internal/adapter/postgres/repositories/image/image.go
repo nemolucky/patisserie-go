@@ -1,4 +1,4 @@
-package postgres
+package image
 
 import (
 	"context"
@@ -8,21 +8,21 @@ import (
 	"github.com/nemolucky/patisserie-go/internal/domain"
 )
 
-//go:embed queries/image/create.sql
+//go:embed query/create.sql
 var CreateImageQuery string
 
-//go:embed queries/image/find_unused.sql
+//go:embed query/find_unused.sql
 var FindUnusedImagesQuery string
 
-//go:embed queries/image/delete.sql
+//go:embed query/delete.sql
 var DeleteImageQuery string
 
 
-func (p *Postgres) CreateImage(ctx context.Context, key string) (*uuid.UUID, error) {
+func (r *ImageRepository) CreateImage(ctx context.Context, key string) (*uuid.UUID, error) {
 
 	var imageID uuid.UUID
 
-	err := p.Pool.QueryRow(ctx, CreateImageQuery, key).Scan(&imageID)
+	err := r.QueryRow(ctx, CreateImageQuery, key).Scan(&imageID)
 	if err != nil{
 		return nil, err
 	}
@@ -30,18 +30,18 @@ func (p *Postgres) CreateImage(ctx context.Context, key string) (*uuid.UUID, err
 	return &imageID, nil
 }
 
-func (p *Postgres) DeleteImages(ctx context.Context, imageIDs []uuid.UUID) (error) {
+func (r *ImageRepository) DeleteImages(ctx context.Context, imageIDs []uuid.UUID) (error) {
 
-	_, err := p.Pool.Exec(ctx, DeleteImageQuery, imageIDs)
+	_, err := r.Exec(ctx, DeleteImageQuery, imageIDs)
 
 	return err
 }
 
-func (p *Postgres) FindUnusedImages(ctx context.Context) ([]*domain.UnusedImage, error) {
+func (r *ImageRepository) FindUnusedImages(ctx context.Context) ([]*domain.UnusedImage, error) {
 
 	var unusedImages []*domain.UnusedImage
 
-	rows, err := p.Pool.Query(ctx, FindUnusedImagesQuery)
+	rows, err := r.Query(ctx, FindUnusedImagesQuery)
 	if err != nil {
 		return nil, err
 	}

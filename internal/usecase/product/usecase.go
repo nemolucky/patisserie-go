@@ -4,14 +4,10 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/nemolucky/patisserie-go/internal/domain"
 )
 
 type Repository interface{
-
-	BeginTx(ctx context.Context) (pgx.Tx, error)
-	CommitTx(ctx context.Context, tx pgx.Tx) error
 
 	ListCatalogProducts(ctx context.Context, limit int, offset int) ([]*domain.CatalogProduct, error)
 
@@ -30,15 +26,22 @@ type Repository interface{
 	ToggleActiveProduct(ctx context.Context, id uuid.UUID) (bool, error)
 }
 
+type TransactionManager interface{
+	Do(ctx context.Context, fn func(ctx context.Context) error) error
+}
+
 type UseCase struct {
 	repository Repository
+	tm TransactionManager
 }
 
 func New(
 	repository Repository,
+	tm TransactionManager,
 ) *UseCase {
 	return &UseCase{
 		repository: repository,
+		tm: tm,
 	}
 }
 

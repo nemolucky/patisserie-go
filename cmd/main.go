@@ -13,6 +13,9 @@ import (
 
 	"github.com/nemolucky/patisserie-go/internal/adapter/minio"
 	"github.com/nemolucky/patisserie-go/internal/adapter/postgres"
+	"github.com/nemolucky/patisserie-go/internal/adapter/postgres/repositories/category"
+	"github.com/nemolucky/patisserie-go/internal/adapter/postgres/repositories/image"
+	"github.com/nemolucky/patisserie-go/internal/adapter/postgres/repositories/products"
 	"github.com/nemolucky/patisserie-go/internal/config"
 	"github.com/nemolucky/patisserie-go/internal/handler"
 
@@ -42,7 +45,7 @@ func main() {
 
 	log.Info("Application started")
 
-	postgres, err := postgres.New(ctx, cfg.Postgres, log)
+	repo, err := postgres.New(ctx, cfg.Postgres, log)
 	if err != nil {
 		log.Error(
 			"Failed to connect Postgres",
@@ -50,7 +53,13 @@ func main() {
 		)
 		os.Exit(1)
 	}
-	defer postgres.Close()
+	defer repo.Close()
+
+	productRepo := products.New(repo)
+	categoryRepo := category.New(repo)
+	imageRepo := image.New(repo)
+
+	tm := postgres.NewTransactionManager(repo)
 
 	log.Info("Postgres connected")
 
@@ -73,9 +82,9 @@ func main() {
 		slog.String("bucket", cfg.Minio.BucketName),
 	)
 
-	productUC := product_usecase.New(postgres)
-	categoryUC := category_usecase.New(postgres)
-	imageUC := image_usecase.New(s3, postgres)
+	productUC := product_usecase.New(productRepo, tm)
+	categoryUC := category_usecase.New(categoryRepo)
+	imageUC := image_usecase.New(s3, imageRepo)
 
 	workers := []worker.Worker{
 		worker.NewImageCleanupWorker(

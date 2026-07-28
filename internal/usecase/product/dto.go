@@ -23,7 +23,7 @@ type CreateProductInput struct {
 
 	Images     []uuid.UUID `json:"images"`
 	Categories []uuid.UUID `json:"categories"`
-	Facts      *domain.NutritionFacts `json:"facts,omitempty"`
+	Facts      domain.NutritionFacts `json:"facts,omitempty"`
 }
 
 
