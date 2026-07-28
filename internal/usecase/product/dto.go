@@ -8,6 +8,7 @@ import (
 type ListCatalogProductsInput struct{
 	Limit int `json:"limit"`
 	Offset int `json:"offset"`
+	Search string `json:"search"`
 }
 
 type ListCatalogProductsOutput struct{

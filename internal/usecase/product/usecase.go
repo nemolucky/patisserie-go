@@ -9,7 +9,7 @@ import (
 
 type Repository interface{
 
-	ListCatalogProducts(ctx context.Context, limit int, offset int) ([]*domain.CatalogProduct, error)
+	ListCatalogProducts(ctx context.Context, search string, limit int, offset int) ([]*domain.CatalogProduct, error)
 
 	CreateProduct(ctx context.Context, title, description string, price int64) (*uuid.UUID, error)
 	ConnectProductImages(ctx context.Context, productID uuid.UUID, images []uuid.UUID) error

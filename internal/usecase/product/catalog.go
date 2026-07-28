@@ -4,6 +4,7 @@ import "context"
 
 func (u *UseCase) ListCatalogProducts(ctx context.Context, input ListCatalogProductsInput) (*ListCatalogProductsOutput, error) {
 	
+	search := input.Search
 	limit := input.Limit
 	offset := input.Offset
 
@@ -19,7 +20,7 @@ func (u *UseCase) ListCatalogProducts(ctx context.Context, input ListCatalogProd
 		offset = 0
 	}
 
-	products, err := u.repository.ListCatalogProducts(ctx, limit, offset)
+	products, err := u.repository.ListCatalogProducts(ctx, search, limit, offset)
 	if err != nil {
 		return nil, err
 	}

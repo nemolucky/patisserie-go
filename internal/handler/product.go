@@ -38,6 +38,8 @@ func (h *ProductHandler) ListCatalogProducts(w http.ResponseWriter, r *http.Requ
 	limitStr := query.Get("limit")
 	offsetStr := query.Get("offset")
 
+	search := query.Get("search")
+
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
 		limit = 20
@@ -51,6 +53,7 @@ func (h *ProductHandler) ListCatalogProducts(w http.ResponseWriter, r *http.Requ
 	input := product_usecase.ListCatalogProductsInput{
 		Limit:  limit,
 		Offset: offset,
+		Search: search,
 	}
 
 	output, err := h.usecase.ListCatalogProducts(

@@ -44,11 +44,11 @@ var GetProductByIDQuery string
 var ToggleActiveByIDQuery string
 
 
-func (r *ProductRepository) ListCatalogProducts(ctx context.Context,  limit int, offset int) ([]*domain.CatalogProduct, error) {
+func (r *ProductRepository) ListCatalogProducts(ctx context.Context,  search string, limit int, offset int) ([]*domain.CatalogProduct, error) {
 
 	products := make([]*domain.CatalogProduct, 0, limit)
 
-	rows, err := r.Query(ctx, ListCatalogProductsQuery, limit, offset)
+	rows, err := r.Query(ctx, ListCatalogProductsQuery, search, limit, offset)
 	if err != nil {
 		return nil, err
 	}

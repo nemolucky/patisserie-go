@@ -17,9 +17,11 @@ LEFT JOIN product_categories pc
 LEFT JOIN categories c
     ON c.id = pc.category_id
 WHERE p.is_active = TRUE
+AND ($1 = '' OR p.title ILIKE '%' || $1 || '%')
 GROUP BY
     p.id,
     pi.url,
     pi.sort_order
 ORDER BY p.title
-LIMIT $1 OFFSET $2;
+LIMIT $2
+OFFSET $3;
