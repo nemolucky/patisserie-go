@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"net/url"
+	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -11,6 +12,8 @@ type Config struct {
 	App      AppConfig
 	Postgres PostgresConfig
 	Minio    MinioConfig
+	Redis    RedisConfig
+	JWT      JWTConfig
 }
 
 type AppConfig struct {
@@ -34,6 +37,18 @@ type MinioConfig struct {
 	UseSSL          bool   `env:"USE_SSL" env-default:"false"`
 	BucketName      string `env:"BUCKET_NAME"`
 	BucketPolicy    string `env:"BUCKET_POLICY" env-default:"private"`
+}
+
+type RedisConfig struct {
+	Addr  string `env:"REDIS_ADDR" env-default:"localhost:6379"`
+	Expiration  time.Duration `env:"REDIS_EXPIRATION" env-default:"5m"`
+}
+
+type JWTConfig struct {
+	AccessSecret  string `env:"ACCESS_SECRET"`
+	AccessExpiration  time.Duration `env:"ACCESS_EXPIRATION" env-default:"3h"`
+	RefreshSecret  string `env:"REFRESH_SECRET"`
+	RefreshExpiration  time.Duration `env:"REFRESH_EXPIRATION" env-default:"7d"`
 }
 
 func New() (*Config, error) {

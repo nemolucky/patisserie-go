@@ -71,6 +71,7 @@ func (h *ImageHandler) Upload(w http.ResponseWriter, r *http.Request) {
 				err.Error(),
 				http.StatusInternalServerError,
 			)
+			return
 		}
 		defer file.Close()
 

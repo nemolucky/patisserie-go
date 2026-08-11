@@ -16,9 +16,14 @@ import (
 	"github.com/nemolucky/patisserie-go/internal/adapter/postgres/repositories/category"
 	"github.com/nemolucky/patisserie-go/internal/adapter/postgres/repositories/image"
 	"github.com/nemolucky/patisserie-go/internal/adapter/postgres/repositories/products"
+	"github.com/nemolucky/patisserie-go/internal/adapter/postgres/repositories/users"
+	"github.com/nemolucky/patisserie-go/internal/adapter/redis"
+	smsprovider "github.com/nemolucky/patisserie-go/internal/adapter/sms_provider"
 	"github.com/nemolucky/patisserie-go/internal/config"
 	"github.com/nemolucky/patisserie-go/internal/handler"
+	tokenprovider "github.com/nemolucky/patisserie-go/internal/token_provider"
 
+	auth_usecase "github.com/nemolucky/patisserie-go/internal/usecase/auth"
 	category_usecase "github.com/nemolucky/patisserie-go/internal/usecase/category"
 	image_usecase "github.com/nemolucky/patisserie-go/internal/usecase/image"
 	product_usecase "github.com/nemolucky/patisserie-go/internal/usecase/product"
@@ -55,6 +60,7 @@ func main() {
 	}
 	defer repo.Close()
 
+	userRepo := users.New(repo)
 	productRepo := products.New(repo)
 	categoryRepo := category.New(repo)
 	imageRepo := image.New(repo)
@@ -82,6 +88,13 @@ func main() {
 		slog.String("bucket", cfg.Minio.BucketName),
 	)
 
+	rds := redis.New(ctx, cfg.Redis, log)
+
+	smsProvider := &smsprovider.SMSProvider{}
+
+	tokenProvider := tokenprovider.NewTokenProvider(cfg.JWT)
+
+	authUC := auth_usecase.New(userRepo, rds, smsProvider, tokenProvider)
 	productUC := product_usecase.New(productRepo, tm)
 	categoryUC := category_usecase.New(categoryRepo)
 	imageUC := image_usecase.New(s3, imageRepo)
@@ -106,6 +119,8 @@ func main() {
 	}
 
 	handler := handler.New(
+		tokenProvider,
+		authUC,
 		productUC,
 		categoryUC,
 		imageUC,

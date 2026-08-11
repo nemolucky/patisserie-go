@@ -78,6 +78,7 @@ func (h *ProductHandler) ListCatalogProducts(w http.ResponseWriter, r *http.Requ
 			"failed to encode response",
 			http.StatusInternalServerError,
 		)
+		return
 	}
 }
 
@@ -93,6 +94,7 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 			err.Error(),
 			http.StatusBadRequest,
 		)
+		return
 	}
 
 	productID, err := h.usecase.Create(r.Context(), input)
@@ -141,6 +143,7 @@ func (h *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 			"failed to encode response",
 			http.StatusInternalServerError,
 		)
+		return
 	}
 }
 
@@ -175,5 +178,6 @@ func (h *ProductHandler) UpdateActive(w http.ResponseWriter, r *http.Request){
 			"failed to encode response",
 			http.StatusInternalServerError,
 		)
+		return
 	}
 } 
