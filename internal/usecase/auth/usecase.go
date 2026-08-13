@@ -21,8 +21,9 @@ type Cache interface{
 	DeleteVerified(ctx context.Context, phone string) error
 }
 
-type SMSProvider interface{
-	SendSMS(ctx context.Context, phone string, code string) (bool, error)
+type SMSVerifier interface{
+	SendCode(ctx context.Context, phone string) error
+	VerifyCode(ctx context.Context, phone string, code string) (bool, error)
 }
 
 type TokenProvider interface{
@@ -33,14 +34,14 @@ type TokenProvider interface{
 type UseCase struct{
 	repository Repository
 	cache Cache
-	sms SMSProvider
+	sms SMSVerifier
 	token TokenProvider
 }
 
 func New(
 	repository Repository,
 	cache Cache,
-	sms SMSProvider,
+	sms SMSVerifier,
 	token TokenProvider,
 ) *UseCase {
 	return &UseCase{

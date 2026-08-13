@@ -21,12 +21,14 @@ import (
 	smsprovider "github.com/nemolucky/patisserie-go/internal/adapter/sms_provider"
 	"github.com/nemolucky/patisserie-go/internal/config"
 	"github.com/nemolucky/patisserie-go/internal/handler"
+	"github.com/nemolucky/patisserie-go/internal/sms_verifier"
 	tokenprovider "github.com/nemolucky/patisserie-go/internal/token_provider"
 
 	auth_usecase "github.com/nemolucky/patisserie-go/internal/usecase/auth"
 	category_usecase "github.com/nemolucky/patisserie-go/internal/usecase/category"
 	image_usecase "github.com/nemolucky/patisserie-go/internal/usecase/image"
 	product_usecase "github.com/nemolucky/patisserie-go/internal/usecase/product"
+	user_usecase "github.com/nemolucky/patisserie-go/internal/usecase/user"
 
 	"github.com/nemolucky/patisserie-go/internal/worker"
 	"github.com/nemolucky/patisserie-go/pkg/logger"
@@ -92,12 +94,18 @@ func main() {
 
 	smsProvider := &smsprovider.SMSProvider{}
 
+	smsVerifier := sms_verifier.New(
+		smsProvider,
+		rds,
+	)
+
 	tokenProvider := tokenprovider.NewTokenProvider(cfg.JWT)
 
-	authUC := auth_usecase.New(userRepo, rds, smsProvider, tokenProvider)
+	authUC := auth_usecase.New(userRepo, rds, smsVerifier, tokenProvider)
 	productUC := product_usecase.New(productRepo, tm)
 	categoryUC := category_usecase.New(categoryRepo)
 	imageUC := image_usecase.New(s3, imageRepo)
+	userUC := user_usecase.New(userRepo, rds, smsVerifier)
 
 	workers := []worker.Worker{
 		worker.NewImageCleanupWorker(
@@ -124,6 +132,7 @@ func main() {
 		productUC,
 		categoryUC,
 		imageUC,
+		userUC,
 	)
 
 	router := handler.InitRoutes()

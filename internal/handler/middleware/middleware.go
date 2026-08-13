@@ -1,15 +1,13 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 	"strings"
 
+	"github.com/nemolucky/patisserie-go/internal/ctxutil"
 	"github.com/nemolucky/patisserie-go/internal/domain"
 	tokenprovider "github.com/nemolucky/patisserie-go/internal/token_provider"
 )
-
-type userIDKey struct{}
 
 func AuthMiddleware(tokenProvider *tokenprovider.TokenProvider) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -37,11 +35,7 @@ func AuthMiddleware(tokenProvider *tokenprovider.TokenProvider) func(http.Handle
 				return
 			}
 
-			ctx := context.WithValue(
-				r.Context(),
-				userIDKey{},
-				claims.UserID,
-			)
+			ctx := ctxutil.SetUserID(r.Context(), claims.UserID)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

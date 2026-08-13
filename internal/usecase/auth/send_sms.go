@@ -6,14 +6,8 @@ func (u *UseCase) SendSMSCode(ctx context.Context, input SendSMSCodeInput)(error
 
 	phone := input.Phone
 
-	code := GenerateSMSCode()
-
-	err := u.cache.SetSMSCode(ctx, phone, code)
+	err := u.sms.SendCode(ctx, phone)
 	if err != nil{
-		return err
-	} 
-
-	if ok, err := u.sms.SendSMS(ctx, phone, code); !ok{
 		return err
 	}
 
